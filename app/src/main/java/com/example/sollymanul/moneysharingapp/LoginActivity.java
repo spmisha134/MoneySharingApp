@@ -22,30 +22,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.prefs.Preferences;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.ButterKnife;
 import butterknife.Bind;
@@ -172,21 +152,31 @@ public class LoginActivity extends AppCompatActivity {
         try {
             JSONObject jsonObject = new JSONObject(response);
             String verified = jsonObject.optString("verified");
-            boolean userVerified = Boolean.valueOf(verified);
-            if(userVerified) {
-                Intent intent = new Intent(getApplicationContext(), VerifiedUserActivity.class);
-                startActivityForResult(intent, REQUEST_SIGNUP);
-                _loginButton.setEnabled(true);
-                progressDialog.dismiss();
-                finish();
-            } else {
-                Intent intent = new Intent(getApplicationContext(), UnverifiedUserActivity.class);
-                startActivityForResult(intent, REQUEST_SIGNUP);
-                _loginButton.setEnabled(true);
-                progressDialog.dismiss();
-                finish();
-            }
+            if(verified != null || verified !="") {
+                boolean userVerified = Boolean.valueOf(verified);
+                if(userVerified) {
+                    Intent intent = new Intent(getApplicationContext(), VerifiedUserActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("UserInfo", response);
+                    intent.putExtras(bundle);
 
+                    _loginButton.setEnabled(true);
+                    progressDialog.dismiss();
+
+                    startActivityForResult(intent, REQUEST_SIGNUP);
+                    finish();
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), UnverifiedUserActivity.class);
+                    intent.putExtra("UserInfo", response);
+
+                    _loginButton.setEnabled(true);
+                    progressDialog.dismiss();
+                    startActivityForResult(intent, REQUEST_SIGNUP);
+
+                    finish();
+                }
+
+            }
 
         } catch (Exception ex) {
             ex.printStackTrace();
